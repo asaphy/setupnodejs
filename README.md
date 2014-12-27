@@ -20,7 +20,7 @@ $ npm install
 Start server with nodemon for auto restarts
 ```bash  
 $ cd bin  
-$ nodemon www  
+$ nodemon --watch ../ www 
 ```  
 
 View webpage  
@@ -133,3 +133,68 @@ block content
 
 Checkout userlist webpage  
 [http://localhost:3000/userlist](http://localhost:3000/userlist)
+
+Part 4: Writing to the DB  
+
+Add route to newuser page  in index.js
+```javascript
+/* GET New User page. */
+router.get('/newuser', function(req, res) {
+    res.render('newuser', { title: 'Add New User' });
+});
+```
+
+Open index.jade and save as newuser.jade
+```jade
+extends layout
+
+block content
+    h1= title
+    form#formAddUser(name="adduser",method="post",action="/adduser")
+        input#inputUserName(type="text", placeholder="username", name="username")
+        input#inputUserEmail(type="text", placeholder="useremail", name="useremail")
+        button#btnSubmit(type="submit") submit
+```
+
+View form webpage  
+[http://localhost:3000/newuser](http://localhost:3000/newuser)
+
+Add submit functionality in index.js
+```javascript
+/* POST to Add User Service */
+router.post('/adduser', function(req, res) {
+
+    // Set our internal DB variable
+    var db = req.db;
+
+    // Get our form values. These rely on the "name" attributes
+    var userName = req.body.username;
+    var userEmail = req.body.useremail;
+
+    // Set our collection
+    var collection = db.get('usercollection');
+
+    // Submit to the DB
+    collection.insert({
+        "username" : userName,
+        "email" : userEmail
+    }, function (err, doc) {
+        if (err) {
+            // If it failed, return error
+            res.send("There was a problem adding the information to the database.");
+        }
+        else {
+            // If it worked, set the header so the address bar doesn't still say /adduser
+            res.location("userlist");
+            // And forward to success page
+            res.redirect("userlist");
+        }
+    });
+});
+```
+View form webpage  
+[http://localhost:3000/newuser](http://localhost:3000/newuser)
+
+Try filling out the form and submitting!
+
+The End!
